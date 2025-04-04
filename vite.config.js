@@ -9,6 +9,10 @@ const __dirname = path.dirname(__filename);
 
 export default defineConfig({
   plugins: [react()],
+  server: {
+    port: 5173, // Set the port to 5173
+    host: '0.0.0.0', // This allows access from external IPs, including VPS
+  },
   resolve: {
     alias: [{ find: "@", replacement: path.resolve(__dirname, "./src") }] // Use path.resolve instead
   }
