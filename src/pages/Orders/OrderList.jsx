@@ -16,7 +16,7 @@ const OrderList = () => {
   const fetchOrders = async () => {
     try {
       const userId = _id; 
-      const response = await axios.get(`http://localhost:5000/api/orders`, {
+      const response = await axios.get(`https://145.223.101.250:3000/api/orders`, {
         params: {
           userId,
           isSeller,
