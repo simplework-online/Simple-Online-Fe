@@ -29,6 +29,7 @@ export default function Login() {
         toast.error("Invalid email or password.");
       }
     } catch (err) {
+      console.log('error logging in', err)
       setIsLoading(false);
       toast.error(err?.response?.data?.error);
     }
@@ -83,12 +84,12 @@ export default function Login() {
 
             <div className="mb-6 text-left max-w-[400px] w-full">
               <Link to='/forgot-password'>
-              <button
-                type="button"
-                className="text-red-500"
-              >
-                Forgot Password?
-              </button>
+                <button
+                  type="button"
+                  className="text-red-500"
+                >
+                  Forgot Password?
+                </button>
               </Link>
             </div>
             <button
