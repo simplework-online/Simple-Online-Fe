@@ -1,13 +1,9 @@
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import DownArrow from "../assets/profilepage/downarrow.png";
-import gigImage from "../../src/assets/populargigs/gigspix.png";
-
 import { faDatabase } from "@fortawesome/free-solid-svg-icons";
 import { Link, useLocation } from "react-router-dom";
 import Smaller_Card from "../components/Cards/Smaller_Card";
-import { useDispatch, useSelector } from "react-redux";
-import { useEffect, useRef, useState } from "react";
-import { resetSearchQuery } from "../store/Slices/gigslice";
+import { useSelector } from "react-redux";
+import { useState } from "react";
 
 export default function Giglist() {
   const [filters, setFilters] = useState({
@@ -18,7 +14,7 @@ export default function Giglist() {
   });
   const location = useLocation()
   const { allGigs, error, searchQuery } = useSelector((state) => state?.gig);
-  console.log(allGigs,'jj');
+  console.log(allGigs, 'jj');
 
   const categories =
     allGigs && allGigs.length
@@ -29,41 +25,41 @@ export default function Giglist() {
   const deadlines =
     allGigs && allGigs.length
       ? Array.from(
-          new Set(
-            allGigs.flatMap((gig) =>
-              Object.values(gig.pricing).map((pkg) => pkg.delivery)
-            )
+        new Set(
+          allGigs.flatMap((gig) =>
+            Object.values(gig.pricing).map((pkg) => pkg.delivery)
           )
         )
+      )
       : [];
 
-      const fromAboutSeller = location.state?.fromAboutSeller || false;
+  const fromAboutSeller = location.state?.fromAboutSeller || false;
 
   const filteredGigs = allGigs
     ? allGigs.filter((gig) => {
-        if (!gig.title.toLowerCase().includes(searchQuery.toLowerCase()) && ( fromAboutSeller ? !gig?.serviceTags?.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase())): true )
-        )
-          return false;
-        
-          
-        if (filters.category && gig.category.trim() !== filters.category)
-          return false;
+      if (!gig.title.toLowerCase().includes(searchQuery.toLowerCase()) && (fromAboutSeller ? !gig?.serviceTags?.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase())) : true)
+      )
+        return false;
 
-        const price = gig?.pricing?.standard?.price;
-        if (filters.priceMin !== "" && price < Number(filters.priceMin))
-          return false;
-        if (filters.priceMax !== "" && price > Number(filters.priceMax))
-          return false;
 
-        if (filters.delivery && filters.delivery !== "Any Deadline") {
-          const hasDeadline = Object.values(gig.pricing).some(
-            (pkg) => pkg.delivery === filters.delivery
-          );
-          if (!hasDeadline) return false;
-        }
+      if (filters.category && gig.category.trim() !== filters.category)
+        return false;
 
-        return true;
-      })
+      const price = gig?.pricing?.standard?.price;
+      if (filters.priceMin !== "" && price < Number(filters.priceMin))
+        return false;
+      if (filters.priceMax !== "" && price > Number(filters.priceMax))
+        return false;
+
+      if (filters.delivery && filters.delivery !== "Any Deadline") {
+        const hasDeadline = Object.values(gig.pricing).some(
+          (pkg) => pkg.delivery === filters.delivery
+        );
+        if (!hasDeadline) return false;
+      }
+
+      return true;
+    })
     : [];
 
   const resetFilter = () => {
@@ -75,7 +71,7 @@ export default function Giglist() {
     });
   };
 
-  
+
   return (
     <div className="bg-gradient-to-r from-black to-purple-900">
       <div className="flex justify-center mx-[4%]">

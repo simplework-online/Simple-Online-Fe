@@ -1,6 +1,7 @@
 import React from "react";
 import gigChat from "../../assets/Images/gigChat.svg";
 import { useFirebase } from "@/context/useFirebase";
+import GigCardMessage from "../Cards/GigCardMessage";
 const adminFirebaseUid = "67aa3de2327788caeb170964";
 const profileDetails = [
   { label: "From", value: "Russia" },
@@ -36,12 +37,13 @@ const ChatProfileSection = () => {
         ))}
       </div>
       <button
-        className="mt-6 px-6 bg-gradient-to-r from-pink-500 to-purple-600 py-2 rounded-full font-normal"
+        className="mt-6 px-6 bg-gradient-to-r from-pink-500 to-purple-600 py-2 rounded-full font-normal mb-5"
         onClick={chatWithSupport}
       >
         Support
       </button>
-      <img src={gigChat} alt="gig" className="mt-4 w-[90%]" />
+      {/* <img src={gigChat} alt="gig" className="mt-4 w-[90%]" /> */}
+      <GigCardMessage />
     </div>
   );
 };

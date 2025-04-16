@@ -1,12 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import { FaPaperclip, FaRegSmile } from "react-icons/fa";
-import chatAvatar from "../../assets/Images/chatAvatar.svg";
-import chatMsg from "../../assets/Images/chatMsg.svg";
-import chatStar from "../../assets/Images/chatStar.svg";
-import audioCall from "../../assets/Images/audioCallChat.svg";
-import deleteChat from "../../assets/Images/deleteChat.svg";
-import videoCall from "../../assets/Images/videoCallChat.svg";
-import settingsChat from "../../assets/Images/settingsChat.svg";
 import micChat from "../../assets/Images/micChat.svg";
 import GigModal from "../../components/Chat/GigModal";
 import { GetLoggedInUser } from "../../Api_Requests/Api_Requests";
@@ -39,6 +32,10 @@ export default function Chat() {
     sendMessage,
     sendVoiceMessage,
   } = useFirebase();
+
+  useEffect(() => {
+    console.log('selected user', selectedUser)
+  }, [selectedUser])
 
   const [messageText, setMessageText] = useState("");
   const messagesEndRef = useRef(null);
@@ -230,11 +227,10 @@ export default function Chat() {
           {messages.map((msg) => (
             <div
               key={msg.id}
-              className={`flex ${
-                msg.senderId === currentUser._id
-                  ? "justify-end"
-                  : "justify-start"
-              }`}
+              className={`flex ${msg.senderId === currentUser._id
+                ? "justify-end"
+                : "justify-start"
+                }`}
             >
               {msg.type === "voice" ? (
                 <AudioMessage
@@ -245,11 +241,10 @@ export default function Chat() {
                 />
               ) : (
                 <div
-                  className={`max-w-xs p-3 rounded-lg ${
-                    msg.senderId === currentUser._id
-                      ? "bg-purple-600"
-                      : "bg-gray-800"
-                  }`}
+                  className={`max-w-xs p-3 rounded-lg ${msg.senderId === currentUser._id
+                    ? "bg-purple-600"
+                    : "bg-gray-800"
+                    }`}
                 >
                   <p>{msg.text}</p>
                   <span className="text-xs text-gray-400 block mt-1">
