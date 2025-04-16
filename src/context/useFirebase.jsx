@@ -41,6 +41,8 @@ export const FirebaseProvider = ({ children }) => {
   const [users, setUsers] = useState([]);
   const [selectedUser, setSelectedUser] = useState(null);
   const [messages, setMessages] = useState([]);
+  const [searchResults, setSearchResults] = useState([]);
+  const [isSearching, setIsSearching] = useState(false);
   const gigSellerAsSelectedUser = useSelector((state) => state.gig.gigSellerId);
 
   // Register user and set up listeners when currentUser changes
@@ -341,26 +343,99 @@ export const FirebaseProvider = ({ children }) => {
     setCurrentUser(userData);
   }, []);
 
+  // Search messages function
+  const searchMessages = async (searchTerm) => {
+    if (!searchTerm || !currentUser?._id) return;
+
+    setIsSearching(true);
+
+    try {
+      // Get all messages where current user is a participant
+      const messagesRef = collection(db, "messages");
+      const q = query(
+        messagesRef,
+        where("participants", "array-contains", currentUser._id)
+      );
+
+      const messagesSnap = await getDocs(q);
+
+      // Filter messages client-side that contain the search term
+      // Note: Firestore doesn't support direct text search, so we fetch and filter
+      const matchingMessages = messagesSnap.docs
+        .map(doc => ({ id: doc.id, ...doc.data() }))
+        .filter(msg => {
+          // Check if text message contains search term (case insensitive)
+          if (msg.text && typeof msg.text === 'string') {
+            return msg.text.toLowerCase().includes(searchTerm.toLowerCase());
+          }
+          return false;
+        });
+
+      // For each matching message, fetch user details
+      const resultsWithUserDetails = await Promise.all(
+        matchingMessages.map(async (msg) => {
+          const otherUserId = msg.senderId === currentUser._id ? msg.receiverId : msg.senderId;
+
+          // Get user details (check if we already have them in users state first)
+          let userDetails = users.find(u => u.id === otherUserId || u._id === otherUserId);
+
+          if (!userDetails) {
+            const userDoc = await getDoc(doc(db, "users", otherUserId));
+            if (userDoc.exists()) {
+              userDetails = { id: otherUserId, ...userDoc.data() };
+            } else {
+              userDetails = { id: otherUserId, username: "Unknown User" };
+            }
+          }
+
+          return {
+            ...msg,
+            userDetails
+          };
+        })
+      );
+
+      setSearchResults(resultsWithUserDetails);
+    } catch (error) {
+      console.error("Error searching messages:", error);
+    } finally {
+      setIsSearching(false);
+    }
+  };
+
+  // Clear search results
+  const clearSearch = () => {
+    setSearchResults([]);
+  };
+
   const value = useMemo(
     () => ({
       currentUser,
       users,
       selectedUser,
       messages,
+      searchResults,
+      isSearching,
       fetchAndSetCurrentUser,
       setSelectedUser,
       sendMessage,
       sendVoiceMessage,
+      searchMessages,
+      clearSearch,
     }),
     [
       currentUser,
       users,
       selectedUser,
       messages,
+      searchResults,
+      isSearching,
       fetchAndSetCurrentUser,
       setSelectedUser,
       sendMessage,
       sendVoiceMessage,
+      searchMessages,
+      clearSearch,
     ]
   );
 

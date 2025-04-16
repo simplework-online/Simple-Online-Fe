@@ -10,6 +10,7 @@ import VoiceMessageRecorder from "@/components/VoiceMessage/VoiceMessage";
 import { Input } from "@/components/ui/input";
 import GoogleMeetButton from "../../components/Google-Meet-Button/GoogleMeetButton";
 import { ProfileAvatar } from "@/components/ProfileAvatar/ProfileAvatar";
+import MessageSearch from "@/components/Chat/MessageSearch";
 
 const debounce = (fn, delay) => {
   let timeoutId;
@@ -31,11 +32,9 @@ export default function Chat() {
     setSelectedUser,
     sendMessage,
     sendVoiceMessage,
+    searchResults
   } = useFirebase();
 
-  useEffect(() => {
-    console.log('selected user', selectedUser)
-  }, [selectedUser])
 
   const [messageText, setMessageText] = useState("");
   const messagesEndRef = useRef(null);
@@ -44,8 +43,23 @@ export default function Chat() {
   const [filteredUsers, setFilteredUsers] = useState([]);
 
   useEffect(() => {
-    setFilteredUsers(users);
-  }, [users]);
+    if (searchResults.length) {
+      const matchedUsers = searchResults.flatMap((message) => {
+        const username = message?.userDetails?.username?.toLowerCase?.();
+        if (!username) return [];
+
+        return users.filter((user) =>
+          user?.username?.toLowerCase().includes(username)
+        );
+      });
+
+      console.log('matched', matchedUsers)
+      setFilteredUsers(matchedUsers);
+    } else {
+      // If no searchResults, fallback to showing all users
+      setFilteredUsers(users);
+    }
+  }, [users, searchResults]);
 
   const handleSearch = useCallback(
     debounce((query) => {
@@ -144,6 +158,7 @@ export default function Chat() {
       className="flex h-full p-4 text-white pt-[2rem]"
       style={{ height: `calc(100vh - 175px)` }}
     >
+      <MessageSearch />
       {/* Sidebar */}
       <div
         className="w-[22%] bg-transparent p-4 rounded-lg mt-0 pt-0"
@@ -168,7 +183,7 @@ export default function Chat() {
           className="space-y-4 cursor-pointer overflow-y-auto"
           style={{ maxHeight: "calc(100vh - 235px)" }}
         >
-          {(searchTerm ? filteredUsers : users).map((user) => (
+          {((searchTerm || searchResults.length) ? filteredUsers : users).map((user) => (
             <div
               key={user.id} // Use a unique key if possible
               className="flex items-center justify-between p-3 bg-transparent rounded-lg"
