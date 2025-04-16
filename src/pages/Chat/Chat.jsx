@@ -11,14 +11,15 @@ import { Input } from "@/components/ui/input";
 import GoogleMeetButton from "../../components/Google-Meet-Button/GoogleMeetButton";
 import { ProfileAvatar } from "@/components/ProfileAvatar/ProfileAvatar";
 import MessageSearch from "@/components/Chat/MessageSearch";
+import { debounce } from "lodash";
 
-const debounce = (fn, delay) => {
-  let timeoutId;
-  return (...args) => {
-    clearTimeout(timeoutId);
-    timeoutId = setTimeout(() => fn(...args), delay);
-  };
-};
+// const debounce = (fn, delay) => {
+//   let timeoutId;
+//   return (...args) => {
+//     clearTimeout(timeoutId);
+//     timeoutId = setTimeout(() => fn(...args), delay);
+//   };
+// };
 
 export default function Chat() {
   const [isModalOpen, setModalOpen] = useState(false);
@@ -32,7 +33,9 @@ export default function Chat() {
     setSelectedUser,
     sendMessage,
     sendVoiceMessage,
-    searchResults
+    searchResults,
+    clearSearch,
+    searchMessages
   } = useFirebase();
 
 
@@ -42,42 +45,49 @@ export default function Chat() {
   const [searchTerm, setSearchTerm] = useState("");
   const [filteredUsers, setFilteredUsers] = useState([]);
 
+  // Debounced search that talks to Firebase
+  const debouncedSearch = useCallback(
+    debounce((term) => {
+      if (term.trim()) {
+        searchMessages(term);
+      } else {
+        clearSearch();
+      }
+    }, 500),
+    []
+  );
+
+  // When searchTerm changes, run debounced search
+  useEffect(() => {
+    debouncedSearch(searchTerm);
+    return () => debouncedSearch.cancel();
+  }, [searchTerm, debouncedSearch]);
+
+  // Final filtered users effect
   useEffect(() => {
     if (searchResults.length) {
       const matchedUsers = searchResults.flatMap((message) => {
         const username = message?.userDetails?.username?.toLowerCase?.();
         if (!username) return [];
-
         return users.filter((user) =>
           user?.username?.toLowerCase().includes(username)
         );
       });
 
-      console.log('matched', matchedUsers)
       setFilteredUsers(matchedUsers);
     } else {
-      // If no searchResults, fallback to showing all users
-      setFilteredUsers(users);
-    }
-  }, [users, searchResults]);
-
-  const handleSearch = useCallback(
-    debounce((query) => {
-      if (query.trim() === "") {
-        setFilteredUsers(users);
+      // If searchResults is empty
+      if (!searchTerm.trim()) {
+        setFilteredUsers(users); // show all
       } else {
         const filtered = users.filter((user) =>
-          user?.username?.toLowerCase().includes(query.toLowerCase())
+          user?.username?.toLowerCase().includes(searchTerm.toLowerCase())
         );
         setFilteredUsers(filtered);
       }
-    }, 300),
-    [users]
-  );
+    }
+  }, [users, searchResults, searchTerm]);
 
-  useEffect(() => {
-    handleSearch(searchTerm);
-  }, [searchTerm, handleSearch]);
 
   // Fetch current user on mount
   useEffect(() => {
@@ -158,7 +168,6 @@ export default function Chat() {
       className="flex h-full p-4 text-white pt-[2rem]"
       style={{ height: `calc(100vh - 175px)` }}
     >
-      <MessageSearch />
       {/* Sidebar */}
       <div
         className="w-[22%] bg-transparent p-4 rounded-lg mt-0 pt-0"
