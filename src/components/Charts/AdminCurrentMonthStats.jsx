@@ -148,7 +148,7 @@ export function AdminCurrentMonthStats() {
                     />
                   }
                 />
-                <Bar dataKey="totalUsers" fill="var(--color-totalUsers)" />
+                <Bar dataKey="totalUsers" fill="var(--color-totalUsers)" radius={6} />
               </BarChart>
             </ChartContainer>
           )}
