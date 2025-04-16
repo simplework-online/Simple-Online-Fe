@@ -38,6 +38,8 @@ export default function Chat() {
     searchMessages
   } = useFirebase();
 
+  console.log('selectedusermahboy', selectedUser)
+
 
   const [messageText, setMessageText] = useState("");
   const messagesEndRef = useRef(null);

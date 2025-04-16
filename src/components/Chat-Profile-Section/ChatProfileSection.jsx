@@ -2,19 +2,38 @@ import React from "react";
 import { useFirebase } from "@/context/useFirebase";
 import GigCardMessage from "../Cards/GigCardMessage";
 import { extractUserDataAsLabelValue } from "@/utils/getKeyUserData";
+import { useState } from "react";
+import { useEffect } from "react";
+import { GetUserByID } from "@/Api_Requests/Api_Requests";
 const adminFirebaseUid = "67aa3de2327788caeb170964";
-let profileDetails = []
 
 const ChatProfileSection = () => {
   const { users, selectedUser, setSelectedUser } = useFirebase();
-  console.log('selectedUser', selectedUser)
-  if (selectedUser) {
-    const keydataboy = () => {
-      return extractUserDataAsLabelValue(selectedUser)
+  const [profileDetails, setProfileDetails] = useState([]);
+  const [profileData, setProfileData] = useState([]);
+
+  useEffect(() => {
+    if (profileData) {
+      const formattedData = extractUserDataAsLabelValue(profileData);
+      setProfileDetails(formattedData);
     }
-    profileDetails = keydataboy();
-    console.log(profileDetails, 'ayoboy')
-  }
+  }, [selectedUser]); // Re-run effect when selectedUser changes
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const res = await GetUserByID(selectedUser?._id || selectedUser?.id);
+        setProfileData(res.data.user);
+      } catch (err) {
+        console.log(err);
+      }
+    };
+
+    if (selectedUser?._id || selectedUser?.id) {
+      fetchUser();
+    }
+  }, [selectedUser]);
+
 
   const chatWithSupport = () => {
     const adminUser = users.find((user) => user.uid === adminFirebaseUid);
