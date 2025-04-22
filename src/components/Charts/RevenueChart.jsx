@@ -37,7 +37,9 @@ export function RevenueChart() {
       <Card>
         <CardHeader>
           <CardTitle>Revenue - By Month</CardTitle>
-          <CardDescription>$1,224 total. Every month adds up</CardDescription>
+          <CardDescription>
+            <span className="font-bold opacity-100 text-white">$1,224 total.</span> Every month adds up
+          </CardDescription>
         </CardHeader>
         <CardContent>
           <ChartContainer config={chartConfig}>

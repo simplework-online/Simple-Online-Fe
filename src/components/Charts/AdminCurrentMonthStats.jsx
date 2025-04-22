@@ -21,17 +21,18 @@ import { useEffect, useState } from "react";
 /**
  * @typedef {Object} ChartDataItem
  * @property {string} date
- * @property {number} totalUsers
+ * @property {number} totalNewUsers
  */
 
 const chartConfig = {
-  totalUsers: { label: "New Users", color: "hsl(var(--chart-1))" },
+  totalNewUsers: { label: "New Users", color: "hsl(var(--chart-1))" },
 };
 
 export function AdminCurrentMonthStats() {
   const [chartData, setChartData] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [totalNewUsers, setTotalNewUsers] = useState(0);
+  const [totalUsers, setTotalUsers] = useState(0);
   const [growthRate, setGrowthRate] = useState(0);
 
   useEffect(() => {
@@ -40,6 +41,7 @@ export function AdminCurrentMonthStats() {
         setIsLoading(true);
         const usersResponse = await getAllUsers();
         const users = usersResponse.data || [];
+        if (users.length) setTotalUsers(users.length);
 
         // Get dates for the last 30 days
         const today = new Date();
@@ -76,17 +78,17 @@ export function AdminCurrentMonthStats() {
           .sort() // Sort dates in ascending order
           .map(date => ({
             date,
-            totalUsers: usersByDate[date]
+            totalNewUsers: usersByDate[date]
           }));
 
         // Calculate total new users in last 30 days
-        const totalUsers = recentUsers.length;
-        setTotalNewUsers(totalUsers);
+        const totalNewUsers = recentUsers.length;
+        setTotalNewUsers(totalNewUsers);
 
         // Calculate growth rate (simplified)
         // Compare users in first 15 days vs last 15 days
-        const firstHalfUsers = formattedData.slice(0, 15).reduce((sum, item) => sum + item.totalUsers, 0);
-        const secondHalfUsers = formattedData.slice(15, 30).reduce((sum, item) => sum + item.totalUsers, 0);
+        const firstHalfUsers = formattedData.slice(0, 15).reduce((sum, item) => sum + item.totalNewUsers, 0);
+        const secondHalfUsers = formattedData.slice(15, 30).reduce((sum, item) => sum + item.totalNewUsers, 0);
 
         if (firstHalfUsers > 0) {
           const growth = ((secondHalfUsers - firstHalfUsers) / firstHalfUsers) * 100;
@@ -117,10 +119,18 @@ export function AdminCurrentMonthStats() {
           <div className="flex">
             <div className="relative z-30 flex flex-1 flex-col justify-center gap-1 border-t border-gray-900 px-6 py-4 text-left data-[active=true]:bg-muted/50 sm:border-l sm:border-t-0 sm:px-8 sm:py-6">
               <span className="text-xs text-muted-foreground">
-                {chartConfig.totalUsers.label}
+                {chartConfig.totalNewUsers.label}
               </span>
               <span className="text-lg font-bold leading-none sm:text-3xl">
                 {isLoading ? "Loading..." : totalNewUsers.toLocaleString()}
+              </span>
+            </div>
+            <div className="relative z-30 flex flex-1 flex-col justify-center gap-1 border-t border-gray-900 px-6 py-4 text-left data-[active=true]:bg-muted/50 sm:border-l sm:border-t-0 sm:px-8 sm:py-6">
+              <span className="text-xs text-muted-foreground whitespace-nowrap">
+                Total Users
+              </span>
+              <span className="text-lg font-bold leading-none sm:text-3xl">
+                {isLoading ? "Loading..." : totalUsers}
               </span>
             </div>
           </div>
@@ -148,7 +158,7 @@ export function AdminCurrentMonthStats() {
                     />
                   }
                 />
-                <Bar dataKey="totalUsers" fill="var(--color-totalUsers)" radius={6} />
+                <Bar dataKey="totalNewUsers" fill="var(--color-totalNewUsers)" radius={6} />
               </BarChart>
             </ChartContainer>
           )}
